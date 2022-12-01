@@ -42,6 +42,12 @@ module Solver =
     let SizeElves e =
         e |> Seq.map SizeElf
 
+    let CaloriesOfTopN n (c: seq<int>) =
+        c 
+            |> Seq.sortDescending
+            |> Seq.take n
+            |> Seq.sum
+
     let Solve =
         let data = ReadData
         let elves = GetElves data 0
@@ -50,3 +56,5 @@ module Solver =
         let sizedElves = SizeElves elves
         let biggestElf = sizedElves |> Seq.max
         printf "The biggest elf has %i calories" biggestElf
+        let top3Elves = sizedElves |> CaloriesOfTopN 3
+        printf "The top 3 biggest elves have %i calories" top3Elves
