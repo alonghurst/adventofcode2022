@@ -9,7 +9,7 @@ module Solver =
 
     let ReadData = File.ReadLines Filename |> Seq.toArray
 
-    let GetElvesOld (s: string) = s.Split (Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+    let LineToCalories (s: string) = Convert.ToInt32 s
 
     let rec GetElf (str: string[]) i = 
         seq {
@@ -36,8 +36,17 @@ module Solver =
                         yield! GetElves str (i + elfLength)
         }
 
+    let SizeElf e = 
+        e |> Seq.sumBy LineToCalories
+
+    let SizeElves e =
+        e |> Seq.map SizeElf
+
     let Solve =
         let data = ReadData
         let elves = GetElves data 0
         let numElves = elves |> Seq.length
-        printf "there are %i elves" numElves
+        printf "There are %i elves" numElves
+        let sizedElves = SizeElves elves
+        let biggestElf = sizedElves |> Seq.max
+        printf "The biggest elf has %i calories" biggestElf
