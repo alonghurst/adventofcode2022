@@ -40,7 +40,7 @@ module Solver =
         |> Seq.filter (fun l -> l.IsSome) 
         |> Seq.map (fun l -> l.Value)
 
-    let WinsVs x = 
+    let LosesVs x = 
         match x with
         | Scissors -> Paper
         | Rock -> Scissors
@@ -48,7 +48,7 @@ module Solver =
 
     let DrawsVs x = x
 
-    let LosesVs x =
+    let WinsVs x =
         match x with
         | Scissors -> Rock
         | Rock -> Paper
@@ -57,15 +57,15 @@ module Solver =
     let ResolveRound (x, y) =
         match x with
         | x when x = y -> Draw
-        | x when y = (LosesVs x) -> Win
-        | x when y = (WinsVs x) -> Lose
+        | x when y = (WinsVs x) -> Win
+        | x when y = (LosesVs x) -> Lose
         | _ -> raise (System.ArgumentException($"Unable to resolve \"{x}\" vs \"{y}\""))
 
     let StrategiseRound (x, y) = 
         match (x, y) with
-        | (_, Lose) -> (x, WinsVs x)
+        | (_, Lose) -> (x, LosesVs x)
         | (_, Draw) -> (x, DrawsVs x)
-        | (_, Win) -> (x, LosesVs x)
+        | (_, Win) -> (x, WinsVs x)
 
     let PointsForResult r =
         match r with
