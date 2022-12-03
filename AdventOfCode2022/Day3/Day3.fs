@@ -15,7 +15,7 @@ module Solver =
         File.ReadLines f
         |> Seq.filter NonBlank
 
-    // Had to do sseq to treat a string[] as a seq<seq<char>>
+    // Had to do this to treat a string[] as a seq<seq<char>>
     // It seems seq<string> is not a convertable type to be used as <seq<seq<char>>
     let StringToSeqCharHack s =
         s 
