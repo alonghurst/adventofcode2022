@@ -26,25 +26,25 @@ module Solver =
     let Contains (a, b) (c, d) =
         a <= c && b >= d
 
-    let EitherContains x y =
+    let EitherContains (x, y) =
         Contains x y || Contains y x
 
     let Overlaps x (c, d) = 
         Contains x (c, c) || Contains x (d, d)
 
-    let EitherOverlaps x y =
+    let EitherOverlaps (x, y) =
         Overlaps x y || Overlaps y x
 
     let CountContaining data = 
         data
         |> Seq.map Pairs
-        |> Seq.filter (fun (x, y) -> EitherContains x y)
+        |> Seq.filter EitherContains
         |> Seq.length
 
     let CountOverlapping data = 
         data
         |> Seq.map Pairs
-        |> Seq.filter (fun (x, y) -> EitherOverlaps x y)
+        |> Seq.filter EitherOverlaps
         |> Seq.length
 
     let Solve1 = 
