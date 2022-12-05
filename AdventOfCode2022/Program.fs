@@ -1,3 +1,3 @@
-﻿open Day4
+﻿open Day5
 
 Solver.Solve
