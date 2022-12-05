@@ -17,6 +17,21 @@ module Solver =
     let StringToSeqCharHack s =
         s 
         |> Seq.map (fun x -> x |> Seq.map(fun y -> y))
+    
+    let Top col = 
+        if Seq.length col = 0 then None
+        else Some (Seq.item 0 col)
+
+    let Tops crates = 
+        crates
+        |> Seq.map Top
+
+    let PrintTops (crates: seq<seq<char>>) =
+        let tops = Tops crates
+        for t in tops do
+            if t.IsSome then printf "%c" t.Value
+            else printf "#"
+        printf "%s" Environment.NewLine
 
     let Crate s = 
         if Seq.length s = 0 then None
@@ -103,9 +118,28 @@ module Solver =
         else 
             let moved = ExecuteMove cols f t
             ExecuteMoves moved f t (i - 1)
+    
+    let rec ExecuteAllMoves cols moves i =
+        PrintTops cols
+        if i = (Seq.length moves) - 1 then cols
+        else
+            let (x, f, t) = Seq.item i moves
+            //printfn "move %i: %i %i %i" i x f t
+            let moved = ExecuteMoves cols f t x
+            ExecuteAllMoves moved moves (i + 1)
+
+    let ReadMoves lines =
+        let (_, line) = FindDefinitionLine lines 0 false
+        lines 
+        |> Seq.skip (line + 1)
+        |> Seq.map ParseMoves
 
     let Solve1 = 
-        ()
+        let data = ReadData Filename |> Seq.toArray
+        let crates = BuildCrates data
+        let moves = ReadMoves data
+        let moved = ExecuteAllMoves crates moves 0
+        PrintTops moved 
 
     let Solve2 = 
        ()
@@ -121,7 +155,6 @@ module Solver =
             "[N] [C]    ";
             "[Z] [M] [P]";
              " 1   2   3 ";
-             "";
             "move 1 from 2 to 1";
             "move 3 from 1 to 3";
             "move 2 from 2 to 1";
@@ -147,6 +180,11 @@ module Solver =
         let moved = ExecuteMove crates 1 3 |> Seq.toArray
         ValidateCrates moved[0] "Z"
         ValidateCrates moved[2] "NP"
+    
+    [<Fact>]
+    let ReadMoves_works () =
+        let moves = ReadMoves TestData
+        Assert.Equal(Seq.length moves, 4)
 
     [<Fact>]
     let ParseMoves_works () =
@@ -154,7 +192,7 @@ module Solver =
             Assert.Equal(m0, x)
             Assert.Equal(m1, y)
             Assert.Equal(m2, z)
-        let r = TestData[5..] |> Seq.map ParseMoves |> Seq.toArray
+        let r = TestData[4..] |> Seq.map ParseMoves |> Seq.toArray
         Validate r[0] 1 2 1
         Validate r[1] 3 1 3
         Validate r[2] 2 2 1
