@@ -26,7 +26,7 @@ module Solver =
         crates
         |> Seq.map Top
 
-    let PrintTops (crates: seq<seq<char>>) =
+    let PrintTops (crates: char[][]) =
         let tops = Tops crates
         for t in tops do
             if t.IsSome then printf "%c" t.Value
@@ -64,6 +64,7 @@ module Solver =
         |> Seq.filter (fun x -> x.IsSome)
         |> Seq.map (fun x -> x.Value)
         |> Seq.rev
+        |> Seq.toArray
 
     let rec FindDefinitionLine (lines: string[]) i b = 
         match lines[i][0] with
@@ -100,35 +101,37 @@ module Solver =
             |> Seq.toArray
         (p[0], p[1], p[2])
 
-    let ExecuteMove (cols: seq<char>[]) fIn tIn toTake =
+    let ExecuteMove (cols: char[][]) fIn tIn toTake =
         // fIn and tIn are column numbers, not indexes
         let f = fIn - 1
         let t = tIn - 1
-        let fromCol = Seq.item f cols
-        let items = Seq.take toTake fromCol
+        let fromCol = Array.item f cols
+        let items = Array.take toTake fromCol
         seq {
             for (i, x) in Seq.indexed cols do
-                let r = if i = f then x |> Seq.skip toTake
-                        else if i = t then items |> Seq.append x
+                let r = if i = f then x |> Array.skip toTake
+                        else if i = t then x |> Array.append items
                         else x
                 yield r
         }
         |> Seq.toArray
 
-    let rec ExecuteMoves cols f t i =
+    let rec ExecuteMoves cols f t i mode =
         if i = 0 then cols
         else 
-            let moved = ExecuteMove cols f t 1
-            ExecuteMoves moved f t (i - 1)
+            if mode then ExecuteMove cols f t i
+            else
+                let moved = ExecuteMove cols f t 1
+                ExecuteMoves moved f t (i - 1) mode
     
-    let rec ExecuteAllMoves cols moves i =
+    let rec ExecuteAllMoves (cols: char[][]) moves i mode =
         PrintTops cols
         if i = Seq.length moves then cols
         else
             let (x, f, t) = Seq.item i moves
             printfn "move %i: %i %i %i" i x f t
-            let moved = ExecuteMoves cols f t x
-            ExecuteAllMoves moved moves (i + 1)
+            let moved = ExecuteMoves cols f t x mode
+            ExecuteAllMoves moved moves (i + 1) mode
 
     let ReadMoves lines =
         let (_, line) = FindDefinitionLine lines 0 false
@@ -141,12 +144,18 @@ module Solver =
         let crates = BuildCrates data
         PrintTops crates
         let moves = ReadMoves data
-        let moved = ExecuteAllMoves crates moves 0
+        let moved = ExecuteAllMoves crates moves 0 false
         printfn "----------------------------"
         PrintTops moved 
 
     let Solve2 = 
-       ()
+        let data = ReadData Filename |> Seq.toArray
+        let crates = BuildCrates data
+        PrintTops crates
+        let moves = ReadMoves data
+        let moved = ExecuteAllMoves crates moves 0 true
+        printfn "----------------------------"
+        PrintTops moved 
 
 
     let Solve =
@@ -174,7 +183,7 @@ module Solver =
     [<Fact>]
     let ExecuteMoves_works () =
         let crates = BuildCrates TestData
-        let moved = ExecuteMoves crates 1 3 2 |> Seq.toArray
+        let moved = ExecuteMoves crates 1 3 2 false |> Seq.toArray
         ValidateCrates moved[0] ""
         ValidateCrates moved[2] "ZNP"
 
