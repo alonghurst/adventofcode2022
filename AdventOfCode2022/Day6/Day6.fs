@@ -1,4 +1,4 @@
-﻿    namespace Day6
+﻿namespace Day6
 
 open System
 open System.IO
