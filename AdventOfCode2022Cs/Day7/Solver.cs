@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AdventOfCode2022Cs.Day7
+﻿namespace AdventOfCode2022Cs.Day7
 {
     public static class Solver
     {
