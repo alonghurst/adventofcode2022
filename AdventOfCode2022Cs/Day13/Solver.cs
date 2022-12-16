@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using AdventOfCode2022Cs.Extensions;
+﻿using AdventOfCode2022Cs.Extensions;
 
 namespace AdventOfCode2022Cs.Day13
 {
