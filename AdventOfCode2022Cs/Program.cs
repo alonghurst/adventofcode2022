@@ -1,4 +1,4 @@
-﻿using AdventOfCode2022Cs.Day17;
+﻿using AdventOfCode2022Cs.Day18;
 
 
 Solver.Solve();
