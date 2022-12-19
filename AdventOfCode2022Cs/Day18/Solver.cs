@@ -24,7 +24,7 @@ namespace AdventOfCode2022Cs.Day18
 
             var steam = ExploreSteam(grid);
 
-            Console.WriteLine($"Steam faces: {steam.Count}");
+            Console.WriteLine($"Steam faces: {steam.Count + 6}");
         }
 
         private static void Render(bool[,,] grid)
