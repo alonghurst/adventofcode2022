@@ -50,7 +50,7 @@ namespace AdventOfCode2022Cs.Day19
         public BlueprintRunner[] Run()
         {
             Minute++;
-            
+
             Log($"== Minute {Minute} ==");
 
             var newRobot = ProcessAction();
@@ -63,17 +63,25 @@ namespace AdventOfCode2022Cs.Day19
 
                 Log($"The new {newRobot.Value} is ready, there are now {Robots[newRobot.Value]}");
             }
+            Log(string.Empty);
 
-            var possibleActions = FindPossibleActions();
-
-            // This instance will always wait
+            var possibleActions = FindPossibleActions().ToArray();
+            
             NextAction = null;
 
-            return possibleActions.Select(x => new BlueprintRunner(this, NextAction)).ToArray();
+            if (possibleActions.Length > 0)
+            {
+                NextAction = possibleActions[0];
+
+                possibleActions = possibleActions.Skip(1).ToArray();
+            }
+            
+            var runners = possibleActions.Select(x => new BlueprintRunner(this, x)).ToArray();
+
+            return runners;
         }
 
-
-        private  void GatherResources()
+        private void GatherResources()
         {
             foreach (var robot in Robots)
             {
@@ -107,6 +115,7 @@ namespace AdventOfCode2022Cs.Day19
                 else
                 {
                     Log($"I was told to make a {NextAction} but I can't afford it");
+                    return null;
                 }
             }
 
@@ -118,16 +127,53 @@ namespace AdventOfCode2022Cs.Day19
             Logs.Add(s);
         }
 
-        private IEnumerable<Resource> FindPossibleActions()
+        private IEnumerable<Resource?> FindPossibleActions()
         {
+            var canAffordAll = true;
+
+            if (CanAfford(Blueprint.Robots[Resource.Geode]))
+            {
+                yield return Resource.Geode;
+                yield break;
+            }
+
+            if (CanAfford(Blueprint.Robots[Resource.Obsidian]))
+            {
+                yield return Resource.Obsidian;
+                yield break;
+            }
+
             foreach (var robot in Blueprint.Robots)
             {
+                if (robot.Key == Resource.Obsidian || robot.Key == Resource.Geode)
+                {
+                    continue;
+                }
+
+                if (robot.Key != Resource.Geode)
+                {
+                    var current = Robots[robot.Key];
+                    if (current >= Blueprint.MostExpensive[robot.Key])
+                    {
+                        continue;
+                    }
+                }
+
                 var canAfford = CanAfford(robot.Value);
 
                 if (canAfford)
                 {
                     yield return robot.Key;
                 }
+                else
+                {
+                    canAffordAll = false;
+                }
+            }
+
+            if (!canAffordAll)
+            {
+                yield return null;
             }
         }
 
