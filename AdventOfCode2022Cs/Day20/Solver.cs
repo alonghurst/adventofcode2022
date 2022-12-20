@@ -15,7 +15,7 @@ namespace AdventOfCode2022Cs.Day20
 
             //Solve("Day20/input.txt");
 
-            Solve2("Day20/input.txt");
+            Solve2("Day20/test.txt");
         }
 
         private static void Solve(string filename)
@@ -33,11 +33,30 @@ namespace AdventOfCode2022Cs.Day20
         {
             var lines = File.ReadAllLines(filename);
 
-            var originalNumbers = LoadNumbers(lines);
+            var originalNumbers = LoadNumbers(lines, 811589153);
 
-            var res = SolvePartTwo(originalNumbers);
+            List<Number> newNumbers = originalNumbers.ToList();
 
-            Console.WriteLine($"Solved for {res}");
+            var i = 0;
+            var tries = 10;
+            while (i++ < tries)
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                newNumbers = MoveNumbers(originalNumbers, newNumbers, false);
+                Console.WriteLine("Did " + i);
+
+                sw.Stop();
+                Console.WriteLine($"Took {sw.Elapsed.TotalSeconds} sec");
+
+                var rem = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds * (tries - i));
+
+                Console.WriteLine($"Estimated remaining {rem.TotalMinutes} min");
+
+            }
+
+            FindCoords(newNumbers, 1000, 2000, 3000);
         }
 
         private static void FindCoords(List<Number> newNumbers, int x, int y, int z)
