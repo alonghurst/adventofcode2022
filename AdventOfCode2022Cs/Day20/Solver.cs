@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
@@ -14,7 +15,7 @@ namespace AdventOfCode2022Cs.Day20
 
             //Solve("Day20/input.txt");
 
-            Solve2("Day20/test.txt");
+            Solve2("Day20/input.txt");
         }
 
         private static void Solve(string filename)
@@ -32,23 +33,16 @@ namespace AdventOfCode2022Cs.Day20
         {
             var lines = File.ReadAllLines(filename);
 
-            var originalNumbers = LoadNumbers(lines, 811589153);
+            var originalNumbers = LoadNumbers(lines);
 
-            List<Number> newNumbers = originalNumbers.ToList();
+            var res = SolvePartTwo(originalNumbers);
 
-            var i = 0;
-            while (i++ < 10)
-            {
-                newNumbers = MoveNumbers(originalNumbers, newNumbers, false);
-                Console.WriteLine("Did " + i);
-            }
-
-            FindCoords(newNumbers, 1000, 2000, 3000);
+            Console.WriteLine($"Solved for {res}");
         }
 
         private static void FindCoords(List<Number> newNumbers, int x, int y, int z)
         {
-            var idx = newNumbers.FindIndex(x => x.Value == 0);
+            var idx = newNumbers.FindIndex(x => x.StartingValue == 0);
 
             long Do(int v)
             {
@@ -58,9 +52,9 @@ namespace AdventOfCode2022Cs.Day20
                     i -= newNumbers.Count;
                 }
                 var n = newNumbers[i];
-                Console.WriteLine($"V: {n.Value}");
+                Console.WriteLine($"V: {n.StartingValue}");
 
-                return n.Value;
+                return n.StartingValue;
             }
 
             var total = Do(x) + Do(y) + Do(z);
@@ -133,11 +127,101 @@ namespace AdventOfCode2022Cs.Day20
             public Number(long value)
             {
                 Value = value;
+                StartingValue = value;
             }
 
-            public long Value { get; }
+            public long StartingValue { get; }
+
+            public long Value { get; set; }
 
             public override string ToString() => Value.ToString();
+        }
+
+        static long SolvePartTwo(IEnumerable<Number> initialList)
+        {
+            List<Node> nodes = new();
+            foreach (var n in initialList)
+            {
+                nodes.Add(new(n.Value * 811_589_153));
+            }
+
+            foreach (var (l, r) in nodes.Zip(nodes.Skip(1)))
+            {
+                l.Next = r;
+                r.Prev = l;
+            }
+
+            nodes[0].Prev = nodes[^1];
+            nodes[^1].Next = nodes[0];
+
+            for (int i = 0; i < 10; i++)
+            {
+                foreach (var n in nodes)
+                {
+                    //Remove our node from the loop
+                    n.Prev.Next = n.Next;
+                    n.Next.Prev = n.Prev;
+
+                    //Allows us to walk along the nodes.
+                    Node l = n.Prev, r = n.Next;
+
+                    foreach (var _ in Enumerable.Range(0, (int)(Math.Abs(n.Val) % (nodes.Count - 1))))
+                    {
+                        if (n.Val < 0)
+                        {
+                            l = l.Prev;
+                            r = r.Prev;
+                        }
+                        else
+                        {
+                            l = l.Next;
+                            r = r.Next;
+                        }
+                    }
+                    l.Next = n;
+                    n.Prev = l;
+                    r.Prev = n;
+                    n.Next = r;
+
+                }
+            }
+
+            long res = 0;
+
+            Node start = nodes.First(a => a.Val == 0);
+
+            foreach (var _ in Enumerable.Range(0, 3))
+            {
+                foreach (var _2 in Enumerable.Range(0, 1000))
+                {
+                    start = start.Next;
+                }
+                res += start.Val;
+            }
+
+            return res;
+        }
+
+        class Node
+        {
+            public long Val { get; set; }
+            public Node Next { get; set; }
+            public Node Prev { get; set; }
+
+            public Node(int Value)
+            {
+                this.Val = Value;
+            }
+
+            public Node(long Value)
+            {
+                this.Val = Value;
+            }
+
+            public override string ToString()
+            {
+                return $"V:{Val}, L:{Prev.Val}, R:{Next.Val}";
+            }
         }
     }
 }
