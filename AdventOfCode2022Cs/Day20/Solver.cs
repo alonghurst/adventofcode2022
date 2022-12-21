@@ -15,7 +15,7 @@ namespace AdventOfCode2022Cs.Day20
 
             //Solve("Day20/input.txt");
 
-            Solve2("Day20/test.txt");
+            Solve2("Day20/input.txt");
         }
 
         private static void Solve(string filename)
