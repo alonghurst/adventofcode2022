@@ -1,12 +1,4 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.IO.Pipes;
-using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
-using System.Text;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace AdventOfCode2022Cs.Day22;
+﻿namespace AdventOfCode2022Cs.Day22;
 
 public static class Solver
 {

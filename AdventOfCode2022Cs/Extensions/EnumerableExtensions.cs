@@ -1,30 +1,29 @@
-﻿namespace AdventOfCode2022Cs.Extensions
+﻿namespace AdventOfCode2022Cs.Extensions;
+
+public static class EnumerableExtensions
 {
-    public static class EnumerableExtensions
+    public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(
+        this IEnumerable<TSource> source, int size)
     {
-        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(
-            this IEnumerable<TSource> source, int size)
+        TSource[] bucket = null;
+        var count = 0;
+
+        foreach (var item in source)
         {
-            TSource[] bucket = null;
-            var count = 0;
+            if (bucket == null)
+                bucket = new TSource[size];
 
-            foreach (var item in source)
-            {
-                if (bucket == null)
-                    bucket = new TSource[size];
+            bucket[count++] = item;
+            if (count != size)
+                continue;
 
-                bucket[count++] = item;
-                if (count != size)
-                    continue;
+            yield return bucket;
 
-                yield return bucket;
-
-                bucket = null;
-                count = 0;
-            }
-
-            if (bucket != null && count > 0)
-                yield return bucket.Take(count).ToArray();
+            bucket = null;
+            count = 0;
         }
+
+        if (bucket != null && count > 0)
+            yield return bucket.Take(count).ToArray();
     }
 }

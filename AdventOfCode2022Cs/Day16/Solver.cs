@@ -1,150 +1,148 @@
-﻿namespace AdventOfCode2022Cs.Day16
+﻿namespace AdventOfCode2022Cs.Day16;
+
+public static class Solver
 {
-
-    public static class Solver
+    public static void Solve()
     {
-        public static void Solve()
+        //SolvePart1("Day16/input.txt");
+        SolvePart2("Day16/test.txt"); 
+    }
+
+    private static void SolvePart1(string filename)
+    {
+        var graph = CreateGraph(filename);
+
+        var end = 30;
+
+        var start = new Route(end, graph, "AA");
+
+        ProcessAndFindBest(start, graph);
+    }
+
+    private static void SolvePart2(string filename)
+    {
+        var graph = CreateGraph(filename);
+
+        var end = 26;
+
+        var start = new Route(end, graph, "AA", true);
+
+        ProcessAndFindBest(start, graph);
+    }
+
+    private static void ProcessAndFindBest(Route start, ValveGraph graph)
+    {
+        var routes = ProcessRoutes(start);
+
+        var best = routes.OrderByDescending(x => x.TotalPressure).First();
+
+        RenderRoute(best, graph);
+    }
+
+    private static void RenderRoute(Route best, ValveGraph graph)
+    {
+        int minute = 0;
+        var openValves = new HashSet<string>();
+        var totalPressure = 0;
+
+        while (minute < best.End)
         {
-            //SolvePart1("Day16/input.txt");
-            SolvePart2("Day16/test.txt"); 
-        }
 
-        private static void SolvePart1(string filename)
-        {
-            var graph = CreateGraph(filename);
+            Console.WriteLine($"== Minute {minute + 1} ==");
 
-            var end = 30;
-
-            var start = new Route(end, graph, "AA");
-
-            ProcessAndFindBest(start, graph);
-        }
-
-        private static void SolvePart2(string filename)
-        {
-            var graph = CreateGraph(filename);
-
-            var end = 26;
-
-            var start = new Route(end, graph, "AA", true);
-
-            ProcessAndFindBest(start, graph);
-        }
-
-        private static void ProcessAndFindBest(Route start, ValveGraph graph)
-        {
-            var routes = ProcessRoutes(start);
-
-            var best = routes.OrderByDescending(x => x.TotalPressure).First();
-
-            RenderRoute(best, graph);
-        }
-
-        private static void RenderRoute(Route best, ValveGraph graph)
-        {
-            int minute = 0;
-            var openValves = new HashSet<string>();
-            var totalPressure = 0;
-
-            while (minute < best.End)
+            if (openValves.Any())
             {
-
-                Console.WriteLine($"== Minute {minute + 1} ==");
-
-                if (openValves.Any())
+                var extraFlow = 0;
+                foreach (var openValve in openValves)
                 {
-                    var extraFlow = 0;
-                    foreach (var openValve in openValves)
-                    {
-                        var va = graph[openValve];
-                        extraFlow += va.FlowRate;
-                    }
-
-                    totalPressure += extraFlow;
-                    var v = string.Join(", ", openValves.Select(x => x));
-                    Console.WriteLine($"Valves {v} are open, releasing {extraFlow} pressure ({totalPressure} total)");
-                }
-                else
-                {
-                    Console.WriteLine("No valves are open");
+                    var va = graph[openValve];
+                    extraFlow += va.FlowRate;
                 }
 
-                DoAction(best.Self, minute, openValves, false);
-                DoAction(best.Elephant, minute, openValves, true);
-
-                minute++;
+                totalPressure += extraFlow;
+                var v = string.Join(", ", openValves.Select(x => x));
+                Console.WriteLine($"Valves {v} are open, releasing {extraFlow} pressure ({totalPressure} total)");
+            }
+            else
+            {
+                Console.WriteLine("No valves are open");
             }
 
-            Console.WriteLine("=====================");
-            Console.WriteLine($"Total pressure: {best.TotalPressure}");
+            DoAction(best.Self, minute, openValves, false);
+            DoAction(best.Elephant, minute, openValves, true);
+
+            minute++;
         }
 
-        private static void DoAction(Actor? actor, int minute, HashSet<string> openValves, bool isElephant)
+        Console.WriteLine("=====================");
+        Console.WriteLine($"Total pressure: {best.TotalPressure}");
+    }
+
+    private static void DoAction(Actor? actor, int minute, HashSet<string> openValves, bool isElephant)
+    {
+        if (actor == null)
         {
-            if (actor == null)
-            {
-                return;
-            }
-
-            var action = actor.Actions.Count > minute ? actor.Actions[minute] : null;
-
-            if (action != null)
-            {
-                if (action.Type == ActionType.Move)
-                {
-                    Console.WriteLine($"{(isElephant ? "Elephant " : "")}Moving to {action.TargetValve}");
-                }
-                else if (action.Type == ActionType.Open)
-                {
-                    Console.WriteLine($"{(isElephant ? "Elephant " : "")}Opening {action.TargetValve}");
-                    openValves.Add(action.TargetValve);
-                }
-            }
+            return;
         }
 
-        private static List<Route> ProcessRoutes(Route start)
+        var action = actor.Actions.Count > minute ? actor.Actions[minute] : null;
+
+        if (action != null)
         {
-            var routes = new List<Route>() { start };
-
-            while (routes.Any(x => !x.IsFinished))
+            if (action.Type == ActionType.Move)
             {
-                Console.WriteLine($"Minute: {routes.First().Minute}");
+                Console.WriteLine($"{(isElephant ? "Elephant " : "")}Moving to {action.TargetValve}");
+            }
+            else if (action.Type == ActionType.Open)
+            {
+                Console.WriteLine($"{(isElephant ? "Elephant " : "")}Opening {action.TargetValve}");
+                openValves.Add(action.TargetValve);
+            }
+        }
+    }
 
-                var extra = new List<Route>();
+    private static List<Route> ProcessRoutes(Route start)
+    {
+        var routes = new List<Route>() { start };
 
-                foreach (var route in routes)
+        while (routes.Any(x => !x.IsFinished))
+        {
+            Console.WriteLine($"Minute: {routes.First().Minute}");
+
+            var extra = new List<Route>();
+
+            foreach (var route in routes)
+            {
+                if (route.IsFinished)
                 {
-                    if (route.IsFinished)
-                    {
-                        continue;
-                    }
-
-                    var a = route.Step();
-
-                    extra.AddRange(a);
+                    continue;
                 }
 
-                routes.AddRange(extra);
+                var a = route.Step();
+
+                extra.AddRange(a);
             }
 
-            return routes;
+            routes.AddRange(extra);
         }
 
-        private static ValveGraph CreateGraph(string filename)
+        return routes;
+    }
+
+    private static ValveGraph CreateGraph(string filename)
+    {
+        var lines = File.ReadAllLines(filename).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+
+        var valves = lines.Select(s => new Valve(s)).ToDictionary(v => v.Id, v => v);
+
+        foreach (var valvesValue in valves.Values)
         {
-            var lines = File.ReadAllLines(filename).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
-
-            var valves = lines.Select(s => new Valve(s)).ToDictionary(v => v.Id, v => v);
-
-            foreach (var valvesValue in valves.Values)
-            {
-                Console.WriteLine(valvesValue.ToString());
-            }
-
-
-            Console.WriteLine("Calculating shortest paths");
-            var graph = new ValveGraph(valves);
-            return graph;
+            Console.WriteLine(valvesValue.ToString());
         }
+
+
+        Console.WriteLine("Calculating shortest paths");
+        var graph = new ValveGraph(valves);
+        return graph;
     }
 }
